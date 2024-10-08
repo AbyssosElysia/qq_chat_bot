@@ -1,6 +1,7 @@
 package com.elysiaptr.entity;
 
 import com.elysiaptr.config.BotConfig;
+import com.elysiaptr.handler.GptReplier;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.BotFactory;
@@ -69,32 +70,60 @@ public class QBot {
         log.info("init chatting robot successfully, id: {}", botConfig.getQqNumber());
     }
 
-
     /**
      * 回复群聊中的at信息
-     * @param message 利用gpt的api回传的信息
      */
-    public void GroupAnswer(String message) {
+    public void groupAnswer() {
         // 回复群聊中的at
         bot.getEventChannel().subscribeAlways(GroupMessageEvent.class, event -> {
-            if (event.getMessage().contentToString().contains("@" + bot.getId())) {
-                event.getSubject().sendMessage(message);
+            String prompt = event.getMessage().contentToString();
+            if (prompt.contains("@" + bot.getId())) {
+                String answer = GptReplier.getAnswer(prompt);
+                log.info("group get prompt successfully, message: {}", prompt);
+                event.getSubject().sendMessage(answer);
+                log.info("group answer chatting robot successfully, message: {}", answer);
             }
         });
-        log.info("group answer chatting robot successfully, message: {}", message);
     }
 
     /**
-     * 回复好友信息
-     * @param message 利用gpt的api回传的信息
+     * 排除自动回复的干扰 回复好友信息
      */
-    public void FriendAnswer(String message) {
+    public void friendAnswer() {
         // 回复好友私聊信息
         bot.getEventChannel().subscribeAlways(FriendMessageEvent.class, event -> {
-            event.getSubject().sendMessage(message);
+            String prompt = event.getMessage().contentToString();
+            if (!prompt.contains("自动回复")) {
+                String answer = GptReplier.getAnswer(prompt);
+                log.info("friend get prompt successfully, message: {}", prompt);
+                event.getSubject().sendMessage(answer);
+                log.info("friend answer chatting robot successfully, message: {}", answer);
+            }
         });
-        log.info("friend answer chatting robot successfully, message: {}", message);
     }
 
+    /**
+     * 回复陌生人
+     */
+    // TODO 回复陌生人
+    public void strangerAnswer() {}
+
+    /**
+     * 自动添加群
+     */
+    // TODO 自动添加群
+    public void autoAddGroups() {}
+
+    /**
+     * 自动添加好友
+     */
+    // TODO 自动添加好友
+    public void AutoAddFriends() {}
+
+    /**
+     * 设置间隔时间
+     */
+    // TODO 设置间隔时间
+    public void setGapTime() {}
 
 }

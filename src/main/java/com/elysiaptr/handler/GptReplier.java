@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.internal.deps.okhttp3.*;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -29,24 +30,7 @@ public class GptReplier {
      */
     public static String getAnswer(String request) {
         Request httpRequest = buildRequest(request);
-
-        // TODO 分层解耦
-        OkHttpClient client = new OkHttpClient();
-        // 发送请求并获取响应
-        try (Response response = client.newCall(httpRequest).execute()) {
-            if (!response.isSuccessful()) {
-                throw new IOException("Unexpected code " + response);
-            }
-
-            // 解析响应
-            String responseBody = response.body().string();
-            JSONObject jsonResponse = new JSONObject(responseBody);
-            JSONArray choices = jsonResponse.getJSONArray("choices");
-            String content = choices.getJSONObject(0).getJSONObject("message").getString("content");
-            return content.trim();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return getResponse(httpRequest);
     }
 
     /**
@@ -56,13 +40,31 @@ public class GptReplier {
      */
     private static Request buildRequest(String request) {
         // 构建请求体
+        JSONObject jsonBody = getJsonObject(request);
+        RequestBody body = RequestBody.create(jsonBody.toString(), MediaType.get("application/json; charset=utf-8"));
+
+        // 构建请求
+        return new Request.Builder()
+                .url(gptConfig.getBaseUrl())
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Authorization", "Bearer " + gptConfig.getApiKey())
+                .post(body)
+                .build();
+    }
+
+    /**
+     * 构建具体json数据
+     * @param request 请求prompt
+     * @return 请求体数据字段
+     */
+    private static JSONObject getJsonObject(String request) {
         JSONObject messageSys = new JSONObject();
         messageSys.put("role", "system");
-        messageSys.put("message", gptConfig.getSystemPrompt());
+        messageSys.put("content", gptConfig.getSystemPrompt());
 
         JSONObject messageUsr = new JSONObject();
         messageUsr.put("role", "user");
-        messageUsr.put("message", request);
+        messageUsr.put("content", request);
 
         JSONArray messages = new JSONArray();
 
@@ -72,20 +74,41 @@ public class GptReplier {
         JSONObject jsonBody = new JSONObject();
         jsonBody.put("model", gptConfig.getModel());
         jsonBody.put("messages", messages);
-        // TODO 完成温度设置
+
+        // TODO 完成温度设置相关配置解析
         jsonBody.put("temperature", 0.7);
 
-        RequestBody body = RequestBody.create(jsonBody.toString(), MediaType.get("application/json; charset=utf-8"));
+        return jsonBody;
+    }
 
-        // 构建请求
-        Request httpRequest = new Request.Builder()
-                .url(gptConfig.getBaseUrl())
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", "Bearer " + gptConfig.getApiKey())
-                .post(body)
-                .build();
+    /**
+     * 接受并处理返回信息
+     * @param httpRequest http请求
+     * @return content字段的值
+     */
+    private static String getResponse(Request httpRequest) {
+        OkHttpClient client = new OkHttpClient();
 
-        return httpRequest;
+        // 发送请求并获取响应
+        try (Response response = client.newCall(httpRequest).execute()) {
+            // 解析响应
+            String responseBody = null;
+            if (response.body() != null) {
+                responseBody = response.body().string();
+            } else {
+                log.error("Response body is null");
+            }
+
+            // 使用json包装
+            JSONObject jsonResponse = new JSONObject(responseBody);
+            JSONArray choices = jsonResponse.getJSONArray("choices");
+            String content = choices.getJSONObject(0).getJSONObject("message").getString("content");
+            return content.trim();
+
+        } catch (IOException e) {
+            log.error("Request failed: {}", e.getMessage());
+            return null;
+        }
     }
 
 }

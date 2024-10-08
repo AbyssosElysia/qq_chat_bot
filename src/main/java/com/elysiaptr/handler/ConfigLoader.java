@@ -19,7 +19,7 @@ public class ConfigLoader {
             return objectMapper.readValue(new File(CONFIG_FILE_PATH), GlobalConfig.class);
         } catch (IOException e) {
             log.error(e.getMessage(), e);
+            return null;
         }
-        return null;
     }
 }
