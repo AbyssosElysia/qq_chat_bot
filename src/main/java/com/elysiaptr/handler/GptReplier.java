@@ -19,6 +19,7 @@ public class GptReplier {
 
     public static void initialize(GptConfig config) {
         gptConfig = config; // 使用正确的赋值
+        log.info("chat bot initialized successfully, config: {}", gptConfig.getSystemPrompt());
     }
 
     /**
