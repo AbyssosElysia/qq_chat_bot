@@ -1,13 +1,8 @@
 package com.elysiaptr.handler;
 
 import com.elysiaptr.config.GptConfig;
-import com.elysiaptr.config.ReplyConfig;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.mamoe.mirai.internal.deps.okhttp3.*;
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -26,6 +21,7 @@ public class GptReplier {
      * 供外界调用的方法
      * 接受从qq中提交的prompt
      * 返回api的回复
+     *
      * @param request qq中监听获取的prompt
      * @return 最终应当发送的话
      */
@@ -36,6 +32,7 @@ public class GptReplier {
 
     /**
      * 构建请求
+     *
      * @param request 请求prompt
      * @return 构建好的http请求
      */
@@ -55,6 +52,7 @@ public class GptReplier {
 
     /**
      * 构建具体json数据
+     *
      * @param request 请求prompt
      * @return 请求体数据字段
      */
@@ -84,6 +82,7 @@ public class GptReplier {
 
     /**
      * 接受并处理返回信息
+     *
      * @param httpRequest http请求
      * @return content字段的值
      */

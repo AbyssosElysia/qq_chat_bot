@@ -22,6 +22,7 @@ public class QBot {
      * 初始化机器人实例
      * 保证可以正常启动
      * 默认启用随机设备信息
+     *
      * @param botConfig 从配置文件中读取的机器人信息
      */
     public QBot(BotConfig botConfig) {
@@ -106,24 +107,28 @@ public class QBot {
      * 回复陌生人
      */
     // TODO 回复陌生人
-    public void strangerAnswer() {}
+    public void strangerAnswer() {
+    }
 
     /**
      * 自动添加群
      */
     // TODO 自动添加群
-    public void autoAddGroups() {}
+    public void autoAddGroups() {
+    }
 
     /**
      * 自动添加好友
      */
     // TODO 自动添加好友
-    public void AutoAddFriends() {}
+    public void AutoAddFriends() {
+    }
 
     /**
      * 设置间隔时间
      */
     // TODO 设置间隔时间
-    public void setGapTime() {}
+    public void setGapTime() {
+    }
 
 }
